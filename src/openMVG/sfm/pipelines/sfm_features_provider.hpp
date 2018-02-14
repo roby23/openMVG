@@ -18,7 +18,7 @@
 #include "openMVG/sfm/sfm_data.hpp"
 #include "openMVG/types.hpp"
 
-#include "third_party/progress/progress_display.hpp"
+#include "third_party/progress/progress.hpp"
 #include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
 namespace openMVG {
@@ -36,10 +36,14 @@ struct Features_Provider
   virtual bool load(
     const SfM_Data & sfm_data,
     const std::string & feat_directory,
-    std::unique_ptr<features::Regions>& region_type)
+    std::unique_ptr<features::Regions>& region_type,
+	C_Progress *  my_progress_bar = nullptr)
   {
-    C_Progress_display my_progress_bar( sfm_data.GetViews().size(),
-      std::cout, "\n- Features Loading -\n" );
+	if (!my_progress_bar)
+		my_progress_bar = &C_Progress::dummy();
+
+    my_progress_bar->restart(sfm_data.GetViews().size(), "\n- Features Loading -\n"); 
+
     // Read for each view the corresponding features and store them as PointFeatures
     bool bContinue = true;
 #ifdef OPENMVG_USE_OPENMP
@@ -48,6 +52,11 @@ struct Features_Provider
     for (Views::const_iterator iter = sfm_data.GetViews().begin();
       iter != sfm_data.GetViews().end() && bContinue; ++iter)
     {
+	  if (my_progress_bar->hasBeenCanceled())
+	  {
+	  	bContinue = false;
+	  	continue;
+	  }
 #ifdef OPENMVG_USE_OPENMP
     #pragma omp single nowait
 #endif
@@ -72,7 +81,7 @@ struct Features_Provider
           // save loaded Features as PointFeature
           feats_per_view[iter->second->id_view] = regions->GetRegionsPositions();
         }
-        ++my_progress_bar;
+		++(*my_progress_bar);
       }
     }
     return bContinue;

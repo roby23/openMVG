@@ -110,7 +110,7 @@ void GlobalSfMReconstructionEngine_RelativeMotions::SetTranslationAveragingMetho
   eTranslation_averaging_method_ = eTranslationAveragingMethod;
 }
 
-bool GlobalSfMReconstructionEngine_RelativeMotions::Process() {
+bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_progress_bar) {
 
   //-------------------
   // Keep only the largest biedge connected subgraph
@@ -532,7 +532,8 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
 
 void GlobalSfMReconstructionEngine_RelativeMotions::Compute_Relative_Rotations
 (
-  rotation_averaging::RelativeRotations & vec_relatives_R
+  rotation_averaging::RelativeRotations & vec_relatives_R,
+  C_Progress *  my_progress_bar
 )
 {
   //
@@ -553,8 +554,10 @@ void GlobalSfMReconstructionEngine_RelativeMotions::Compute_Relative_Rotations
 
   system::Timer t;
 
-  C_Progress_display my_progress_bar( poseWiseMatches.size(),
-      std::cout, "\n- Relative pose computation -\n" );
+  if (!my_progress_bar)
+	my_progress_bar = &C_Progress::dummy();
+
+  my_progress_bar->restart(poseWiseMatches.size(), "\n- Relative pose computation -\n");
 
 #ifdef OPENMVG_USE_OPENMP
   #pragma omp parallel for schedule(dynamic)
@@ -562,7 +565,7 @@ void GlobalSfMReconstructionEngine_RelativeMotions::Compute_Relative_Rotations
   // Compute the relative pose from pairwise point matches:
   for (int i = 0; i < static_cast<int>(poseWiseMatches.size()); ++i)
   {
-    ++my_progress_bar;
+    ++(*my_progress_bar);
     {
       PoseWiseMatches::const_iterator iter (poseWiseMatches.begin());
       std::advance(iter, i);

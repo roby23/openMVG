@@ -13,6 +13,7 @@
 
 #include "openMVG/cameras/Camera_Common.hpp"
 #include "openMVG/sfm/sfm_data.hpp"
+#include "third_party/progress/progress_display.hpp"
 
 namespace openMVG {
 namespace sfm {
@@ -37,7 +38,7 @@ public:
 
   virtual ~ReconstructionEngine() = default;
 
-  virtual bool Process() = 0;
+  virtual bool Process(C_Progress *  my_progress_bar = nullptr) = 0;
 
   cameras::Intrinsic_Parameter_Type Get_Intrinsics_Refinement_Type() const
   {

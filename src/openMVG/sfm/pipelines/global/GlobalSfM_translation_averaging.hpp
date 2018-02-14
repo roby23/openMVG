@@ -14,6 +14,7 @@
 
 #include "openMVG/multiview/translation_averaging_common.hpp"
 #include "openMVG/tracks/tracks.hpp"
+#include "third_party/progress/progress.hpp"
 
 namespace openMVG { namespace graph { struct Triplet; } }
 namespace openMVG { namespace matching { struct PairWiseMatches; } }
@@ -61,7 +62,8 @@ private:
     const sfm::Features_Provider * features_provider,
     const sfm::Matches_Provider * matches_provider,
     const Hash_Map<IndexT, Mat3> & map_globalR,
-    matching::PairWiseMatches &tripletWise_matches);
+    matching::PairWiseMatches &tripletWise_matches,
+	C_Progress *  my_progress_bar = nullptr);
 
   //-- Compute the relative translations on the rotations graph.
   // Compute relative translations by using triplets of poses.
@@ -73,7 +75,8 @@ private:
     const sfm::Features_Provider * features_provider,
     const sfm::Matches_Provider * matches_provider,
     std::vector<RelativeInfo_Vec> & vec_triplet_relative_motion,
-    matching::PairWiseMatches & newpairMatches);
+    matching::PairWiseMatches & newpairMatches,
+	C_Progress *  my_progress_bar = nullptr);
 
   // Robust estimation and refinement of triplet of translations
   bool Estimate_T_triplet(

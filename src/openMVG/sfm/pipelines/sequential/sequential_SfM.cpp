@@ -91,7 +91,7 @@ void SequentialSfMReconstructionEngine::SetMatchesProvider(Matches_Provider * pr
   matches_provider_ = provider;
 }
 
-bool SequentialSfMReconstructionEngine::Process() {
+bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
 
   //-------------------
   //-- Incremental reconstruction
@@ -103,7 +103,7 @@ bool SequentialSfMReconstructionEngine::Process() {
   // Initial pair choice
   if (initial_pair_ == Pair(0,0))
   {
-    if (!AutomaticInitialPairChoice(initial_pair_))
+    if (!AutomaticInitialPairChoice(initial_pair_, my_progress_bar))
     {
       // Cannot find a valid initial pair, try to set it by hand?
       if (!ChooseInitialPair(initial_pair_))
@@ -118,9 +118,15 @@ bool SequentialSfMReconstructionEngine::Process() {
   if (!MakeInitialPair3D(initial_pair_))
     return false;
 
+  if (!my_progress_bar)
+	  my_progress_bar = &C_Progress::dummy();
+  
+  my_progress_bar->restart(set_remaining_view_id_.size(), "\n- Processing -\n");
+
   // Compute robust Resection of remaining images
   // - group of images will be selected and resection + scene completion will be tried
   size_t resectionGroupIndex = 0;
+  int asd = 0;
   std::vector<uint32_t> vec_possible_resection_indexes;
   while (FindImagesWithPossibleResection(vec_possible_resection_indexes))
   {
@@ -130,6 +136,8 @@ bool SequentialSfMReconstructionEngine::Process() {
     {
       bImageAdded |= Resection(iter);
       set_remaining_view_id_.erase(iter);
+	  
+	  ++(*my_progress_bar);	  
     }
 
     if (bImageAdded)
@@ -339,7 +347,7 @@ bool SequentialSfMReconstructionEngine::InitLandmarkTracks()
   return map_tracks_.size() > 0;
 }
 
-bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initial_pair) const
+bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initial_pair, C_Progress *  my_progress_bar) const
 {
   // select a pair that have the largest baseline (mean angle between its bearing vectors).
 
@@ -364,10 +372,11 @@ bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initia
 
   std::vector<std::pair<double, Pair>> scoring_per_pair;
 
-  // Compute the relative pose & the 'baseline score'
-  C_Progress_display my_progress_bar( matches_provider_->pairWise_matches_.size(),
-    std::cout,
-    "Automatic selection of an initial pair:\n" );
+  if (!my_progress_bar)
+	my_progress_bar = &C_Progress::dummy();
+
+  my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "\nAutomatic selection of an initial pair : \n");
+
 #ifdef OPENMVG_USE_OPENMP
   #pragma omp parallel
 #endif
@@ -377,7 +386,7 @@ bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initia
   #pragma omp single nowait
 #endif
     {
-      ++my_progress_bar;
+      ++(*my_progress_bar);
 
       const Pair current_pair = match_pair.first;
 
