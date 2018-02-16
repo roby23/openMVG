@@ -121,7 +121,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   if (!my_progress_bar)
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(set_remaining_view_id_.size(), "\n- Processing -\n");
+  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "\n- Processing -\n");
 
   // Compute robust Resection of remaining images
   // - group of images will be selected and resection + scene completion will be tried
@@ -162,6 +162,8 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   {
     eraseUnstablePosesAndObservations(sfm_data_);
   }
+
+  ++(*my_progress_bar);
 
   //-- Reconstruction done.
   //-- Display some statistics

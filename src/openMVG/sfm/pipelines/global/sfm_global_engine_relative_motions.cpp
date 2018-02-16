@@ -126,8 +126,15 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_pro
     KeepOnlyReferencedElement(set_remainingIds, matches_provider_->pairWise_matches_);
   }
 
+  if (!my_progress_bar)
+	  my_progress_bar = &C_Progress::dummy();
+  
+  my_progress_bar->restart(5, "\n- Performing Global SfM -\n");
+
   openMVG::rotation_averaging::RelativeRotations relatives_R;
   Compute_Relative_Rotations(relatives_R);
+
+  ++(*my_progress_bar);
 
   Hash_Map<IndexT, Mat3> global_rotations;
   if (!Compute_Global_Rotations(relatives_R, global_rotations))
@@ -136,22 +143,32 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_pro
     return false;
   }
 
+  ++(*my_progress_bar);
+
   matching::PairWiseMatches  tripletWise_matches;
   if (!Compute_Global_Translations(global_rotations, tripletWise_matches))
   {
     std::cerr << "GlobalSfM:: Translation Averaging failure!" << std::endl;
     return false;
   }
+
+  ++(*my_progress_bar);
+
   if (!Compute_Initial_Structure(tripletWise_matches))
   {
     std::cerr << "GlobalSfM:: Cannot initialize an initial structure!" << std::endl;
     return false;
   }
+
+  ++(*my_progress_bar);
+
   if (!Adjust())
   {
     std::cerr << "GlobalSfM:: Non-linear adjustment failure!" << std::endl;
     return false;
   }
+
+  ++(*my_progress_bar);
 
   //-- Export statistics about the SfM process
   if (!sLogging_file_.empty())
