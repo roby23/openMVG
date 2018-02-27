@@ -44,7 +44,7 @@ public:
   void SetRotationAveragingMethod(ERotationAveragingMethod eRotationAveragingMethod);
   void SetTranslationAveragingMethod(ETranslationAveragingMethod eTranslation_averaging_method_);
 
-  bool Process() override;
+  bool Process(C_Progress *  my_progress_bar = nullptr) override;
 
 protected:
   /// Compute from relative rotations the global rotations of the camera poses
@@ -74,7 +74,8 @@ private:
   /// Compute relative rotations
   void Compute_Relative_Rotations
   (
-    openMVG::rotation_averaging::RelativeRotations & vec_relatives_R
+    openMVG::rotation_averaging::RelativeRotations & vec_relatives_R,
+	C_Progress *  my_progress_bar = nullptr
   );
 
   //----
