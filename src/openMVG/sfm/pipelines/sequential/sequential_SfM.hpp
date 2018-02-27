@@ -16,6 +16,7 @@
 #include "openMVG/sfm/pipelines/sfm_engine.hpp"
 #include "openMVG/cameras/cameras.hpp"
 #include "openMVG/tracks/tracks.hpp"
+#include "third_party/progress/progress.hpp"
 
 namespace htmlDocument { class htmlDocumentStream; }
 namespace { template <typename T> class Histogram; }
@@ -41,7 +42,7 @@ public:
   void SetFeaturesProvider(Features_Provider * provider);
   void SetMatchesProvider(Matches_Provider * provider);
 
-  virtual bool Process() override;
+  virtual bool Process(C_Progress *  my_progress_bar = nullptr) override;
 
   void setInitialPair(const Pair & initialPair)
   {
@@ -58,7 +59,7 @@ public:
   bool MakeInitialPair3D(const Pair & initialPair);
 
   /// Automatic initial pair selection (based on a 'baseline' computation score)
-  bool AutomaticInitialPairChoice(Pair & initialPair) const;
+  bool AutomaticInitialPairChoice(Pair & initialPair, C_Progress *  my_progress_bar = nullptr) const;
 
   /**
    * Set the default lens distortion type to use if it is declared unknown
