@@ -297,7 +297,8 @@ void GlobalSfM_Translation_AveragingSolver::Compute_translations
   const sfm::Features_Provider * features_provider,
   const sfm::Matches_Provider * matches_provider,
   const Hash_Map<IndexT, Mat3> & map_globalR,
-  matching::PairWiseMatches &tripletWise_matches
+  matching::PairWiseMatches &tripletWise_matches,
+  C_Progress *  my_progress_bar
 )
 {
   std::cout << "\n-------------------------------" << "\n"
@@ -312,7 +313,8 @@ void GlobalSfM_Translation_AveragingSolver::Compute_translations
     features_provider,
     matches_provider,
     vec_relative_motion_,
-    tripletWise_matches);
+    tripletWise_matches,
+	my_progress_bar);
 }
 
 //-- Perform a trifocal estimation of the graph contain in vec_triplets with an
@@ -324,7 +326,8 @@ void GlobalSfM_Translation_AveragingSolver::ComputePutativeTranslation_EdgesCove
   const sfm::Features_Provider * features_provider,
   const sfm::Matches_Provider * matches_provider,
   std::vector<RelativeInfo_Vec> & vec_triplet_relative_motion,
-  matching::PairWiseMatches & newpairMatches
+  matching::PairWiseMatches & newpairMatches,
+  C_Progress *  my_progress_bar
 )
 {
   openMVG::system::Timer timerLP_triplet;
@@ -409,10 +412,10 @@ void GlobalSfM_Translation_AveragingSolver::ComputePutativeTranslation_EdgesCove
 
     openMVG::sfm::MutexSet<myEdge> m_mutexSet;
 
-    C_Progress_display my_progress_bar(
-      vec_edges.size(),
-      std::cout,
-      "\nRelative translations computation (edge coverage algorithm)\n");
+	if (!my_progress_bar)
+		my_progress_bar = &C_Progress::dummy();
+
+	my_progress_bar->restart(vec_edges.size(), "\nRelative translations computation (edge coverage algorithm)\n");
 
 #  ifdef OPENMVG_USE_OPENMP
     std::vector<std::vector<RelativeInfo_Vec>> initial_estimates(omp_get_max_threads());
@@ -426,7 +429,7 @@ void GlobalSfM_Translation_AveragingSolver::ComputePutativeTranslation_EdgesCove
     for (int k = 0; k < static_cast<int>(vec_edges.size()); ++k)
     {
       const myEdge & edge = vec_edges[k];
-      ++my_progress_bar;
+	  ++(*my_progress_bar);
 
       if (m_mutexSet.count(edge) == 0 && m_mutexSet.size() != vec_edges.size())
       {

@@ -20,6 +20,7 @@
 
 #include "third_party/cmdLine/cmdLine.h"
 #include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
+#include "third_party/progress/progress_display.hpp"
 
 #include <cstdlib>
 #include <memory>
@@ -163,9 +164,12 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  // Show the progress on the command line:
+  C_Progress_display progress;
+
   // Features reading
   std::shared_ptr<Features_Provider> feats_provider = std::make_shared<Features_Provider>();
-  if (!feats_provider->load(sfm_data, sMatchesDir, regions_type)) {
+  if (!feats_provider->load(sfm_data, sMatchesDir, regions_type, &progress)) {
     std::cerr << std::endl
       << "Invalid features." << std::endl;
     return EXIT_FAILURE;
@@ -230,7 +234,7 @@ int main(int argc, char **argv)
     sfmEngine.setInitialPair(initialPairIndex);
   }
 
-  if (sfmEngine.Process())
+  if (sfmEngine.Process(&progress))
   {
     std::cout << std::endl << " Total Ac-Sfm took (s): " << timer.elapsed() << std::endl;
 

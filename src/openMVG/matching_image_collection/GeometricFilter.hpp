@@ -16,7 +16,7 @@
 #include "openMVG/features/feature.hpp"
 #include "openMVG/matching/indMatch.hpp"
 
-#include "third_party/progress/progress_display.hpp"
+#include "third_party/progress/progress.hpp"
 
 namespace openMVG { namespace sfm { struct Regions_Provider; } }
 namespace openMVG { namespace sfm { struct SfM_Data; } }

@@ -28,7 +28,7 @@ namespace sfm {
 /// Allow to load and return the regions related to a view
 struct Regions_Provider
 {
-public:
+public:  
 
   virtual ~Regions_Provider() = default;
 
@@ -85,6 +85,11 @@ public:
     return ret;
   }
 
+  virtual void reset(std::unique_ptr<openMVG::features::Regions>& region_type)
+  {
+	  region_type_.reset(region_type->EmptyClone());
+  }
+
   // Load Regions related to a provided SfM_Data View container
   virtual bool load(
     const SfM_Data & sfm_data,
@@ -136,6 +141,11 @@ public:
       }
     }
     return bContinue;
+  }
+
+  virtual void add(const IndexT x, std::unique_ptr<features::Regions>& regions_ptr)
+  {
+	  cache_[x] = std::move(regions_ptr);
   }
 
 protected:
