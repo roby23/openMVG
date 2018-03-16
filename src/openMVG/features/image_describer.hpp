@@ -26,6 +26,13 @@ enum EDESCRIBER_PRESET
   HIGH_PRESET,
   ULTRA_PRESET
 };
+
+enum EIMAGE_RESOLUTION
+{
+	FULL_RESOLUTION,
+	HALF_RESOLUTION
+};
+
 /// A pure virtual class for image description computation
 class Image_describer
 {
@@ -41,6 +48,11 @@ public:
   virtual bool Set_configuration_preset
   (
     EDESCRIBER_PRESET preset
+  ) = 0;
+
+  virtual bool Set_image_resolution
+  (
+	  EIMAGE_RESOLUTION resolution
   ) = 0;
 
   /**

@@ -128,6 +128,12 @@ public:
     return true;
   }
 
+  bool Set_image_resolution(EIMAGE_RESOLUTION resolution) override
+  {
+	  std::cerr << "Set_image_resolution for current feature preset not implemented yet." << std::endl;
+	  return false;
+  }
+
   /**
   @brief Detect regions on the image and compute their attributes (description)
   @param image Image.

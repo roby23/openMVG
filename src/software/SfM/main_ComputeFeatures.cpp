@@ -217,13 +217,21 @@ int main(int argc, char **argv)
     }
     else
     {
-      if (!sFeaturePreset.empty())
-      if (!image_describer->Set_configuration_preset(stringToEnum(sFeaturePreset)))
-      {
-        std::cerr << "Preset configuration failed." << std::endl;
-        return EXIT_FAILURE;
-      }
+		if (!sFeaturePreset.empty())
+		{
+			if (!image_describer->Set_configuration_preset(stringToEnum(sFeaturePreset)))
+			{
+				std::cerr << "Preset configuration failed." << std::endl;
+				return EXIT_FAILURE;
+			}			
+		}
     }
+
+	if (!image_describer->Set_image_resolution(HALF_RESOLUTION))
+	{
+		std::cerr << "Preset configuration failed." << std::endl;
+		return EXIT_FAILURE;
+	}
 
     // Export the used Image_describer and region type for:
     // - dynamic future regions computation and/or loading

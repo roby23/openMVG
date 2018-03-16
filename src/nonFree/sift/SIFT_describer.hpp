@@ -12,6 +12,7 @@
 #include "openMVG/features/image_describer.hpp"
 #include "openMVG/features/regions_factory.hpp"
 #include "openMVG/image/image_container.hpp"
+#include "openMVG/image/image_resampling.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -58,14 +59,16 @@ public:
       int num_scales = 3,
       float edge_threshold = 10.0f,
       float peak_threshold = 0.04f,
-      bool root_sift = true
+      bool root_sift = true,
+	  bool half_resolution = false
     ):
       _first_octave(first_octave),
       _num_octaves(num_octaves),
       _num_scales(num_scales),
       _edge_threshold(edge_threshold),
       _peak_threshold(peak_threshold),
-      _root_sift(root_sift) {}
+      _root_sift(root_sift),
+	  _half_resolution(half_resolution) {}
 
     template<class Archive>
     inline void serialize( Archive & ar );
@@ -77,6 +80,7 @@ public:
     float _edge_threshold;  // Max ratio of Hessian eigenvalues
     float _peak_threshold;  // Min contrast
     bool _root_sift;        // see [1]
+	bool _half_resolution;
   };
 
   //--
@@ -116,6 +120,22 @@ public:
     return true;
   }
 
+  bool Set_image_resolution(EIMAGE_RESOLUTION resolution) override
+  {
+	  switch (resolution)
+	  {
+	  case FULL_RESOLUTION:
+		  _params._half_resolution = false;
+		  break;
+	  case HALF_RESOLUTION:
+		  _params._half_resolution = true;
+		  break;
+	  default:
+		  return false;
+	  }
+	  return true;
+  }
+
   /**
   @brief Detect regions on the image and compute their attributes (description)
   @param image Image.
@@ -143,9 +163,18 @@ public:
       const image::Image<unsigned char>* mask = nullptr
   )
   {
-    const int w = image.Width(), h = image.Height();
+	  image::Image<unsigned char> processedImage = image;	  
+	  double scale = 1.0;
+
+	  if (_params._half_resolution) 
+	  {
+		  ImageHalfSample(image, processedImage);
+		  scale = 2.0;
+	  }
+
+    const int w = processedImage.Width(), h = processedImage.Height();
     //Convert to float
-    const image::Image<float> If(image.GetMat().cast<float>());
+    const image::Image<float> If(processedImage.GetMat().cast<float>());
 
     VlSiftFilt *filt = vl_sift_new(w, h,
       _params._num_octaves, _params._num_scales, _params._first_octave);
@@ -184,8 +213,15 @@ public:
         // Feature masking
         if (mask)
         {
-          const image::Image<unsigned char> & maskIma = *mask;
-          if (maskIma(keys[i].y, keys[i].x) == 0)
+		  image::Image<unsigned char> processedMask = *mask;
+
+		  if (_params._half_resolution)
+		  {
+			  ImageHalfSample(*mask, processedMask);
+		  }
+
+          const image::Image<unsigned char> & maskIma = processedMask;
+          if (maskIma(keys[i].y * scale, keys[i].x * scale) == 0)
             continue;
         }
 
@@ -198,7 +234,7 @@ public:
 
         for (int q=0 ; q < nangles ; ++q) {
           vl_sift_calc_keypoint_descriptor(filt, &descr[0], keys+i, angles[q]);
-          const SIOPointFeature fp(keys[i].x, keys[i].y,
+          const SIOPointFeature fp(keys[i].x * scale, keys[i].y * scale,
             keys[i].sigma, static_cast<float>(angles[q]));
 
           siftDescToUChar(&descr[0], descriptor, _params._root_sift);

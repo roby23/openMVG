@@ -22,7 +22,8 @@ void openMVG::features::SIFT_Image_describer::Params::serialize( Archive & ar )
     cereal::make_nvp("num_scales",_num_scales),
     cereal::make_nvp("edge_threshold",_edge_threshold),
     cereal::make_nvp("peak_threshold",_peak_threshold),
-    cereal::make_nvp("root_sift",_root_sift));
+    cereal::make_nvp("root_sift",_root_sift),
+    cereal::make_nvp("half_resolution", _half_resolution));
 }
 
 template<class Archive>
