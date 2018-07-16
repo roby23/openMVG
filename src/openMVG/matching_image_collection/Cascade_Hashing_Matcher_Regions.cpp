@@ -45,7 +45,7 @@ void Match
 {
   if (!my_progress_bar)
     my_progress_bar = &C_Progress::dummy();
-  my_progress_bar->restart(pairs.size(), "\n- Matching -\n");
+  //my_progress_bar->restart(pairs.size(), "Matching");
 
   // Collect used view indexes
   std::set<IndexT> used_index;

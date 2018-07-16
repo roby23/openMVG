@@ -103,6 +103,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   // Initial pair choice
   if (initial_pair_ == Pair(0,0))
   {
+	my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "Step 5 of 6: Initial pair selection");
     if (!AutomaticInitialPairChoice(initial_pair_, my_progress_bar))
     {
       // Cannot find a valid initial pair, try to set it by hand?
@@ -121,7 +122,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   if (!my_progress_bar)
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "\n- Processing -\n");
+  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "Step 6 of 6: Aligning images");
 
   // Compute robust Resection of remaining images
   // - group of images will be selected and resection + scene completion will be tried
@@ -377,7 +378,7 @@ bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initia
   if (!my_progress_bar)
 	my_progress_bar = &C_Progress::dummy();
 
-  my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "\nAutomatic selection of an initial pair : \n");
+  //my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "\nAutomatic selection of an initial pair : \n");
 
 #ifdef OPENMVG_USE_OPENMP
   #pragma omp parallel

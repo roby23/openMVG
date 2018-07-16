@@ -129,7 +129,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_pro
   if (!my_progress_bar)
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(5, "\n- Performing Global SfM -\n");
+  my_progress_bar->restart(5, "Performing Global SfM");
 
   openMVG::rotation_averaging::RelativeRotations relatives_R;
   Compute_Relative_Rotations(relatives_R);

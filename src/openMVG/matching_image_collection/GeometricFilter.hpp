@@ -75,7 +75,7 @@ void ImageCollectionGeometricFilter::Robust_model_estimation
 {
   if (!my_progress_bar)
     my_progress_bar = &C_Progress::dummy();
-  my_progress_bar->restart( putative_matches.size(), "\n- Geometric filtering -\n" );
+  my_progress_bar->restart( putative_matches.size(), "Geometric filtering" );
 
 #ifdef OPENMVG_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
