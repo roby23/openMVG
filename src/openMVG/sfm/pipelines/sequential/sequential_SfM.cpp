@@ -10,7 +10,6 @@
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM.hpp"
 #include "openMVG/geometry/pose3.hpp"
 #include "openMVG/multiview/triangulation.hpp"
-#include "openMVG/numeric/eigen_alias_definition.hpp"
 #include "openMVG/sfm/pipelines/sfm_features_provider.hpp"
 #include "openMVG/sfm/pipelines/sfm_matches_provider.hpp"
 #include "openMVG/sfm/pipelines/localization/SfM_Localizer.hpp"
@@ -103,14 +102,10 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   // Initial pair choice
   if (initial_pair_ == Pair(0,0))
   {
-	my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "Step 4 of 5: Initial pair selection");
+	my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "Step 4 of 5: Selezione coppia immagini iniziale");
     if (!AutomaticInitialPairChoice(initial_pair_, my_progress_bar))
-    {
-      // Cannot find a valid initial pair, try to set it by hand?
-      if (!ChooseInitialPair(initial_pair_))
-      {
+    {      
         return false;
-      }
     }
   }
   // Else a starting pair was already initialized before
@@ -122,7 +117,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   if (!my_progress_bar)
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "Step 5 of 5: Aligning images");
+  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "Step 5 di 5: Allineamento immagini");
 
   // Compute robust Resection of remaining images
   // - group of images will be selected and resection + scene completion will be tried
@@ -452,7 +447,8 @@ bool SequentialSfMReconstructionEngine::AutomaticInitialPairChoice(Pair & initia
               tracks::submapTrack::const_iterator iter = iterT->second.begin();
               const Vec2 featI = features_provider_->feats_per_view[I][iter->second].coords().cast<double>();
               const Vec2 featJ = features_provider_->feats_per_view[J][(++iter)->second].coords().cast<double>();
-              vec_angles.push_back(AngleBetweenRay(pose_I, cam_I, pose_J, cam_J, featI, featJ));
+              vec_angles.push_back(AngleBetweenRay(pose_I, cam_I, pose_J, cam_J, 
+                cam_I->get_ud_pixel(featI), cam_J->get_ud_pixel(featJ)));
             }
             // Compute the median triangulation angle
             const unsigned median_index = vec_angles.size() / 2;
@@ -645,7 +641,7 @@ bool SequentialSfMReconstructionEngine::MakeInitialPair3D(const Pair & current_p
         ob_xJ_ud = cam_J->get_ud_pixel(ob_xJ.x);
 
       const double angle = AngleBetweenRay(
-        pose_I, cam_I, pose_J, cam_J, ob_xI.x, ob_xJ.x);
+        pose_I, cam_I, pose_J, cam_J, ob_xI_ud, ob_xJ_ud);
       const Vec2 residual_I = cam_I->residual(pose_I(landmark.X), ob_xI.x);
       const Vec2 residual_J = cam_J->residual(pose_J(landmark.X), ob_xJ.x);
       if (angle > 2.0 &&
@@ -1141,7 +1137,8 @@ bool SequentialSfMReconstructionEngine::Resection(const uint32_t viewIndex)
                              pose_J.asMatrix(), (*cam_J)(xJ_ud),
                              &X);
               // Check triangulation result
-              const double angle = AngleBetweenRay(pose_I, cam_I, pose_J, cam_J, xI, xJ);
+              const double angle = AngleBetweenRay(
+                pose_I, cam_I, pose_J, cam_J, xI_ud, xJ_ud);
               const Vec2 residual_I = cam_I->residual(pose_I(X), xI);
               const Vec2 residual_J = cam_J->residual(pose_J(X), xJ);
               if (
