@@ -61,7 +61,10 @@ class C_Progress
      * @return Return true if the process has been canceled by the user.
      **/
     virtual bool hasBeenCanceled()const { return false; }
-    /**
+    
+	virtual void logMessage(const std::string& msg = std::string()) { } // logMessage
+
+	/**
      * @brief Post-Increment operator
      * @param increment the number of step that we want to increment the internal step counter
      * @return the value of the internal count => count()

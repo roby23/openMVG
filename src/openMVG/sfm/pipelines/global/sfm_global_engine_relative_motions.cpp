@@ -127,6 +127,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_pro
 	  my_progress_bar = &C_Progress::dummy();
   
   my_progress_bar->restart(5, "Step 5 of 5: Allineamento immagini");
+  my_progress_bar->logMessage("Step 5 of 5: Allineamento immagini");
 
   openMVG::rotation_averaging::RelativeRotations relatives_R;
   Compute_Relative_Rotations(relatives_R);
