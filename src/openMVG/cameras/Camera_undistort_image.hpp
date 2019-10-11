@@ -48,10 +48,11 @@ void UndistortImage(
 #endif
     for ( int j = 0; j < imageIn.Height(); ++j )
       for ( int i = 0; i < imageIn.Width(); ++i )
-      {
+      {		  
         const Vec2 undisto_pix( i, j );
         // compute coordinates with distortion
         const Vec2 disto_pix = cam->get_d_pixel( undisto_pix );
+
         // pick pixel if it is in the image domain
         if ( imageIn.Contains( disto_pix( 1 ), disto_pix( 0 ) ) )
         {

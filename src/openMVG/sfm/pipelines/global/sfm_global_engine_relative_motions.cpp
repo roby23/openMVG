@@ -35,6 +35,8 @@
 
 #include <iostream>
 
+#include "../../i18nUtils.hpp"
+
 #ifdef _MSC_VER
 #pragma warning( once : 4267 ) //warning C4267: 'argument' : conversion from 'size_t' to 'const int', possible loss of data
 #endif
@@ -123,11 +125,11 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Process(C_Progress *  my_pro
     KeepOnlyReferencedElement(set_remainingIds, matches_provider_->pairWise_matches_);
   }
 
-  if (!my_progress_bar)
+  if (!my_progress_bar) 
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(5, "Step 5 of 5: Allineamento immagini");
-  my_progress_bar->logMessage("Step 5 of 5: Allineamento immagini");
+  my_progress_bar->restart(5, GetString("Step 5 of 5: Images alignment"));
+  my_progress_bar->logMessage(GetString("Step 5 of 5: Images alignment"));
 
   openMVG::rotation_averaging::RelativeRotations relatives_R;
   Compute_Relative_Rotations(relatives_R);

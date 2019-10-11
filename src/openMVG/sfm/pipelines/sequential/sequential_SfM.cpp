@@ -30,6 +30,8 @@
 #include <iostream>
 #include <utility>
 
+#include "../../i18nUtils.hpp"
+
 #ifdef _MSC_VER
 #pragma warning( once : 4267 ) //warning C4267: 'argument' : conversion from 'size_t' to 'const int', possible loss of data
 #endif
@@ -102,7 +104,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   // Initial pair choice
   if (initial_pair_ == Pair(0,0))
   {
-	my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), "Step 4 of 5: Selezione coppia immagini iniziale");
+	my_progress_bar->restart(matches_provider_->pairWise_matches_.size(), GetString("Step 4 of 5: Selecting initial pair"));
     if (!AutomaticInitialPairChoice(initial_pair_, my_progress_bar))
     {      
         return false;
@@ -117,7 +119,7 @@ bool SequentialSfMReconstructionEngine::Process(C_Progress *  my_progress_bar) {
   if (!my_progress_bar)
 	  my_progress_bar = &C_Progress::dummy();
   
-  my_progress_bar->restart(set_remaining_view_id_.size() + 1, "Step 5 di 5: Allineamento immagini");
+  my_progress_bar->restart(set_remaining_view_id_.size() + 1, GetString("Step 5 of 5: Images alignment"));
 
   // Compute robust Resection of remaining images
   // - group of images will be selected and resection + scene completion will be tried

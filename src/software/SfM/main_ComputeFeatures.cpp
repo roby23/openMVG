@@ -227,7 +227,7 @@ int main(int argc, char **argv)
 		}
     }
 
-	if (!image_describer->Set_image_resolution(HALF_RESOLUTION))
+	if (!image_describer->Set_image_resolution(FULL_RESOLUTION))
 	{
 		std::cerr << "Preset configuration failed." << std::endl;
 		return EXIT_FAILURE;
@@ -311,8 +311,11 @@ int main(int argc, char **argv)
             continue;
           }
           // Use the local mask only if it fits the current image size
-          if (imageMask.Width() == imageGray.Width() && imageMask.Height() == imageGray.Height())
-            mask = &imageMask;
+		  if (imageMask.Width() == imageGray.Width() && imageMask.Height() == imageGray.Height())
+		  {
+			  std::cout << "Loaded mask: " << mask_filename_local << std::endl;
+			  mask = &imageMask;
+		  }
         }
         else
         {

@@ -163,14 +163,25 @@ public:
       const image::Image<unsigned char>* mask = nullptr
   )
   {
-	  image::Image<unsigned char> processedImage = image;	  
-	  double scale = 1.0;
-
-	  if (_params._half_resolution) 
-	  {
-		  ImageHalfSample(image, processedImage);
-		  scale = 2.0;
-	  }
+    image::Image<unsigned char> processedImage = image;	  
+    image::Image<unsigned char> processedMask;
+    
+    if (mask)
+      processedMask = *mask;
+    
+    double scale = 1.0;
+    
+    if (_params._half_resolution) 
+    {
+      ImageHalfSample(image, processedImage);
+    
+      if (mask)
+      {
+    	  ImageHalfSample(*mask, processedMask);
+      }
+    
+      scale = 2.0;
+    }
 
     const int w = processedImage.Width(), h = processedImage.Height();
     //Convert to float
@@ -213,15 +224,9 @@ public:
         // Feature masking
         if (mask)
         {
-		  image::Image<unsigned char> processedMask = *mask;
-
-		  if (_params._half_resolution)
-		  {
-			  ImageHalfSample(*mask, processedMask);
-		  }
-
-          const image::Image<unsigned char> & maskIma = processedMask;
-          if (maskIma(keys[i].y * scale, keys[i].x * scale) == 0)
+		  const image::Image<unsigned char> & maskIma = processedMask;
+          
+		  if (maskIma(keys[i].y * scale, keys[i].x * scale) == 0)
             continue;
         }
 
@@ -233,10 +238,11 @@ public:
         }
 
         for (int q=0 ; q < nangles ; ++q) {
+
           vl_sift_calc_keypoint_descriptor(filt, &descr[0], keys+i, angles[q]);
           const SIOPointFeature fp(keys[i].x * scale, keys[i].y * scale,
             keys[i].sigma, static_cast<float>(angles[q]));
-
+		  
           siftDescToUChar(&descr[0], descriptor, _params._root_sift);
           #ifdef OPENMVG_USE_OPENMP
           #pragma omp critical

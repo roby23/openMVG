@@ -212,7 +212,7 @@ class Pinhole_Intrinsic_Fisheye : public Pinhole_Intrinsic
     * @return Distorted pixel
     */
     Vec2 get_d_pixel( const Vec2& p ) const override
-    {
+    {		
       return cam2ima( add_disto( ima2cam( p ) ) );
     }
 
