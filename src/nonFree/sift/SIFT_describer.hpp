@@ -166,9 +166,11 @@ public:
     image::Image<unsigned char> processedImage = image;	  
     image::Image<unsigned char> processedMask;
     
-    if (mask)
-      processedMask = *mask;
-    
+	if (mask)
+	{
+		processedMask = *mask;
+	}
+
     double scale = 1.0;
     
     if (_params._half_resolution) 
@@ -226,7 +228,7 @@ public:
         {
 		  const image::Image<unsigned char> & maskIma = processedMask;
           
-		  if (maskIma(keys[i].y * scale, keys[i].x * scale) == 0)
+		  if (maskIma(keys[i].y, keys[i].x) == 0)
             continue;
         }
 
