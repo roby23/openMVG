@@ -27,14 +27,13 @@ namespace euclidean_resection
  * @param b13 is the cosine of the angle between bearing vector 1 and bearing vector 3
  * @param b23 is the cosine of the angle between bearing vector 2 and bearing vector 3
  * The paper note it rarely improve after two iterations. The original implementation use 5 iterations.
- * For unknown reasons it always works for the correct solution, but not always for the other solutions!
  */
 static void gauss_newton_refineL(Vec3 &L,
                           const double & a12, const double & a13, const double & a23,
                           const double & b12, const double & b13, const double & b23)
 {
   // const expr makes it easier for the compiler to unroll
-  // TODO(RJ:) I have hardcoded the number of iteration here, it's a template parameter in the original implementation
+  // TODO(RJ:) I have hardcoded the number of iterations here, it's a template parameter in the original implementation
   for (int i = 0; i < 5; ++i)
   {
     double l1 = L(0);
@@ -74,12 +73,12 @@ static void gauss_newton_refineL(Vec3 &L,
              v3 * v7, -v0 * v7, -v1 * v3;
       Vec3 L1 = Vec3(L) - det * (Ji * r);
       //%l=l - g*H\G;%inv(H)*G
-      //L=L - g*J\r; 
+      //L=L - g*J\r;
       //% works because the size is ok!
       {
-        double l1 = L(0);
-        double l2 = L(1);
-        double l3 = L(2);
+        double l1 = L1(0);
+        double l2 = L1(1);
+        double l3 = L1(2);
         double r11 = l1 * l1 + l2 * l2 + b12 * l1 * l2 - a12;
         double r12 = l1 * l1 + l3 * l3 + b13 * l1 * l3 - a13;
         double r13 = l2 * l2 + l3 * l3 + b23 * l2 * l3 - a23;
@@ -267,9 +266,9 @@ static void eigwithknown0(const Mat3 &x, Mat3 &E, Vec3 &L)
 /**
 * @brief Compute the absolute pose of a camera using three 3D-to-2D correspondences.
 *  Implementation of the paper "Lambda Twist: An Accurate Fast Robust Perspective Three Point (P3P) Solver". Persson, M. and Nordberg, K. ECCV 2018
-* 
+*
 * @authors Mikael Persson and Klas Nordberg
-* 
+*
 * @param[in] bearing_vectors 3x3 matrix with UNITARY feature vectors (each column is a vector)
 * @param[in] X  3x3 matrix with corresponding 3D world points (each column is a point)
 * @param[out] rotation_translation_solutions vector that will contain the solutions (up to 4 solutions)
@@ -394,37 +393,41 @@ bool computePosesNordberg(
     {
       double tau1, tau2;
       root2real(b, c, tau1, tau2);
-      if (tau1 > 0)
+      if (tau1 > 0.0)
       {
         double tau = tau1;
         double d = a23 / (tau * (b23 + tau) + 1.0);
-        double l2 = std::sqrt(d);
-        double l3 = tau * l2;
+        if(d > 0.0) {
+          double l2 = std::sqrt(d);
+          double l3 = tau * l2;
 
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0.0)
-        {
-          Ls[valid] = Vec3(l1, l2, l3);
-          ++valid;
+          double l1 = w0 * l2 + w1 * l3;
+          if (l1 >= 0.0)
+          {
+            Ls[valid] = Vec3(l1, l2, l3);
+            ++valid;
+          }
         }
       }
       if (tau2 > 0.0)
       {
         double tau = tau2;
         double d = a23 / (tau * (b23 + tau) + 1.0);
-        double l2 = std::sqrt(d);
-        double l3 = tau * l2;
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0.0)
-        {
-          Ls[valid] = Vec3(l1, l2, l3);
-          ++valid;
+        if(d > 0.0) {
+          double l2 = std::sqrt(d);
+          double l3 = tau * l2;
+          double l1 = w0 * l2 + w1 * l3;
+          if (l1 >= 0.0)
+          {
+            Ls[valid] = Vec3(l1, l2, l3);
+            ++valid;
+          }
         }
       }
     }
   }
 
-  { //+v
+  { //-v
     double s = -v;
     double w2 = 1.0 / (s * V(0, 1) - V(0, 0));
     double w0 = (V(1, 0) - s * V(1, 1)) * w2;
@@ -443,30 +446,32 @@ bool computePosesNordberg(
       {
         double tau = tau1;
         double d = a23 / (tau * (b23 + tau) + 1.0);
-        double l2 = std::sqrt(d);
+        if(d > 0.0) {
+          double l2 = std::sqrt(d);
+          double l3 = tau * l2;
 
-        double l3 = tau * l2;
-
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0)
-        {
-          Ls[valid] = Vec3(l1, l2, l3);
-          ++valid;
+          double l1 = w0 * l2 + w1 * l3;
+          if (l1 >= 0)
+          {
+            Ls[valid] = Vec3(l1, l2, l3);
+            ++valid;
+          }
         }
       }
       if (tau2 > 0)
       {
         double tau = tau2;
         double d = a23 / (tau * (b23 + tau) + 1.0);
-        double l2 = std::sqrt(d);
+        if(d > 0.0) {
+          double l2 = std::sqrt(d);
+          double l3 = tau * l2;
 
-        double l3 = tau * l2;
-
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0)
-        {
-          Ls[valid] = Vec3(l1, l2, l3);
-          ++valid;
+          double l1 = w0 * l2 + w1 * l3;
+          if (l1 >= 0)
+          {
+            Ls[valid] = Vec3(l1, l2, l3);
+            ++valid;
+          }
         }
       }
     }
@@ -486,7 +491,7 @@ bool computePosesNordberg(
   Xmat << d12(0), d13(0), d12xd13(0),
           d12(1), d13(1), d12xd13(1),
           d12(2), d13(2), d12xd13(2);
-  
+
   Xmat = Xmat.inverse().eval();
 
   for (int i = 0; i < valid; ++i)
@@ -508,7 +513,7 @@ bool computePosesNordberg(
     Mat3 Rs = Ymat * Xmat;
     rotation_translation_solutions.emplace_back(Rs, ry1 - Rs * P1);
   }
-  
+
   return valid > 0;
 }
 
@@ -533,17 +538,6 @@ void P3PSolver_Nordberg::Solve(
     }
   }
 };
-
-double P3PSolver_Nordberg::Error
-(
-  const Mat34 & P,
-  const Vec3 & bearing_vector,
-  const Vec3 & pt3D
-)
-{
-  const auto new_bearing = (P * pt3D.homogeneous()).normalized();
-  return 1.0 - (bearing_vector.dot(new_bearing));
-}
 
 } // namespace euclidean_resection
 } // namespace openMVG

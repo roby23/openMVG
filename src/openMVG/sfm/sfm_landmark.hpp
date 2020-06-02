@@ -40,6 +40,7 @@ struct Landmark
 {
   Vec3 X;
   Observations obs;
+  std::string name;
 
   // Serialization
   template <class Archive>
